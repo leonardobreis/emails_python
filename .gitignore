@@ -1,0 +1,5 @@
+# Default ignored files
+build/
+dist/
+/shelf/
+/workspace.xml
