@@ -4,10 +4,10 @@ import ConectDBcorp
 import EnviarEmail
 from xml.dom import minidom
 
-with open("V:\Informática\EmailsPython\SQLQuery\SQLQuery - TitulosPagarReceberVencidos.sql", "r") as arquivo:
+with open("SQLQuery\SQLQuery - TitulosPagarReceberVencidos.sql", "r") as arquivo:
     SQLQuery = arquivo.read()
 
-with open("V:\Informática\EmailsPython\emails_parametros.xml", "r", encoding="utf-8") as xmlFile:
+with open("emails_parametros.xml", "r", encoding="utf-8") as xmlFile:
     config = minidom.parse(xmlFile)
 
 config_inTeste: int = 1
