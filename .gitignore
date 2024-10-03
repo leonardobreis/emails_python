@@ -2,6 +2,7 @@
 *.xml
 *.spec
 SQLQuery/
+__pycache__/
 build/
 dist/
 /shelf/

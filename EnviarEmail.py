@@ -1,16 +1,28 @@
 import smtplib
 import email.message
+from xml.dom import minidom
 
 def Enviar(_Assunto, _Corpo_Email, _Emails_Para):
+
+    with open("V:\Informática\EmailsPython\emails_parametros.xml", "r", encoding="utf-8") as xmlFile:
+        config = minidom.parse(xmlFile)
+
+    config_login: str = ''
+    config_senha: str = ''
+
+    for configs in config.getElementsByTagName("ConfigEmail"):
+        config_login = configs.getAttribute("Usuario")
+        config_senha = configs.getAttribute("Senha")
+
     msg = email.message.Message()
     msg['Subject'] = _Assunto
-    msg['From'] = "Airzap - Anest Iwata<contato@airzap.com.br>"
+    msg['From'] = f"Airzap - Anest Iwata<{config_login}>"
 
     _Emails_Para = _Emails_Para.split(',')
     msg['To'] = ','.join(_Emails_Para)
 
-    login = "contato@airzap-anestiwata.com.br"
-    password = "f50I+ht8"
+    login = config_login
+    password = config_senha
 
     msg.add_header('Content-Type', 'text/html')
     msg.set_payload( _Corpo_Email, charset='utf-8')
