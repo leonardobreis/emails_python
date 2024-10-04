@@ -13,23 +13,27 @@ with open("V:\Informática\EmailsPython\emails_parametros.xml", "r", encoding="u
 parametros = sys.argv
 
 config_inTeste: int = 1
+config_inHomolog: int = 1
 config_emailsPara: str  = ""
 config_emailsPara_CD: str  = ""
 config_emailsPara_AT: str  = ""
 config_emailsPara_Thiago: str  = ""
 config_emailsPara_Ricardo: str  = ""
 config_emailsPara_Outros: str  = ""
+config_emailsCc: str = ""
 config_emailsTeste: str = ""
 config_assunto: str = ""
 parametro1: str = ""
 
 for configs in config.getElementsByTagName("EmailPedidosEmAberto"):
-    config_inTeste= int(configs.getAttribute("inTeste"))
+    config_inTeste = int(configs.getAttribute("inTeste"))
+    config_inHomolog = int(configs.getAttribute("inHomolog"))
     config_emailsPara_CD = configs.getAttribute("EmailsPara_CD")
     config_emailsPara_AT = configs.getAttribute("EmailsPara_AT")
     config_emailsPara_Thiago = configs.getAttribute("EmailsPara_Thiago")
     config_emailsPara_Ricardo = configs.getAttribute("EmailsPara_Ricardo")
     config_emailsPara_Outros = configs.getAttribute("EmailsPara_Outros")
+    config_emailsCc = configs.getAttribute("EmailCc")
     config_emailsTeste = configs.getAttribute("EmailTeste")
     config_assunto = configs.getAttribute("Assunto")
     config_tituloTabela1 = configs.getAttribute("TituloTabela1")
@@ -198,7 +202,14 @@ corpo_email += corpo_footer
 
 if config_inTeste == 1:
     emails_Para = config_emailsTeste
+    emails_Cc = ''
 else:
     emails_Para = config_emailsPara
+    emails_Cc = config_emailsCc
 
-EnviarEmail.Enviar(config_assunto, corpo_email, emails_Para)
+if config_inHomolog == 1 and config_inTeste == 0:
+    emails_BCc = config_emailsTeste
+else:
+    emails_BCc = ''
+
+EnviarEmail.Enviar(config_assunto, corpo_email, emails_Para, emails_Cc, emails_BCc)
