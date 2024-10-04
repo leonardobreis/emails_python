@@ -32,7 +32,7 @@ def ConectaSQL():
 
     return conn.cursor()
 
-def arrayAdd(array, search_valor, valorAdd):
+def arrayAdd(array, search_valor, valor1Add, valor2Add=0):
     indice = None
 
     for x in range(len(array)):
@@ -40,8 +40,9 @@ def arrayAdd(array, search_valor, valorAdd):
             indice = x
 
     if indice == None:
-        array.append([search_valor, valorAdd])
+        array.append([search_valor, valor1Add, valor2Add])
     else:
-        array[indice][1] += valorAdd
+        array[indice][1] += valor1Add
+        array[indice][2] += valor2Add
 
     return array
