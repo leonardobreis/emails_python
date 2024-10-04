@@ -45,9 +45,9 @@ if parametro1 == 'CD':
 elif parametro1 == 'AT':
     config_emailsPara = config_emailsPara_AT
 elif parametro1 == 'RICARDO':
-    config_emailsPara = config_emailsPara_Thiago
-elif parametro1 == 'THIAGO':
     config_emailsPara = config_emailsPara_Ricardo
+elif parametro1 == 'THIAGO':
+    config_emailsPara = config_emailsPara_Thiago
 elif parametro1 == 'AED':
     config_emailsPara = config_emailsPara_Outros
 else:
@@ -70,11 +70,12 @@ email_titulo_colunas_tabela1 = """<tr>
                                     <th>Cliente</th>
                                     <th>Status Pedido</th>
                                     <th>Status Separação</th>
+                                    <th>% Estoque*</th>                                    
                                     <th>Vendedor</th>
                                     <th>Pagamento</th>
                                     <th>Valor</th>
                                   </tr>"""
-total_colunas_tabela1 = 8
+total_colunas_tabela1 = 9
 
 email_titulo_colunas_tabela2 = """<tr>
                                     <th>Prev. Fatur.</th>
@@ -82,8 +83,8 @@ email_titulo_colunas_tabela2 = """<tr>
                                     <th>Cliente</th>
                                     <th>Status Pedido</th>
                                     <th>Status Separação</th>
+                                    <th>% Estoque*</th>
                                     <th>Vendedor</th>
-                                    <th>Pagamento</th>
                                     <th>Natureza</th>
                                     <th>Valor</th>
                                   </tr>"""
@@ -116,6 +117,7 @@ for x in rows:
                                f"<td>{x.Cliente}</td>"
                                f"<td>{x.StatusPedido}</td>"
                                f"<td>{x.StatusSeparacao}</td>"
+                               f"<td>{x.Estoque}</td>"
                                f"<td>{x.Representante}</td>"
                                f"<td>{x.Pagamento}</td>"
                                f"<td align ='right'>{float(x.Valor):_.2f}</td>".replace('.',',').replace('_','.')+
@@ -140,8 +142,8 @@ for x in rows:
                                f"<td>{x.Cliente}</td>"
                                f"<td>{x.StatusPedido}</td>"
                                f"<td>{x.StatusSeparacao}</td>"
+                               f"<td>{x.Estoque}</td>"
                                f"<td>{x.Representante}</td>"
-                               f"<td>{x.Pagamento}</td>"
                                f"<td>{x.Natur_Descr}</td>"
                                f"<td align ='right'>{float(x.Valor):_.2f}</td>".replace('.',',').replace('_','.')+
                                f"</tr>")
@@ -180,7 +182,9 @@ email_body_tabela2 += f"<tr><th colspan='{total_colunas_tabela2}'>Total Geral</t
 email_body_tabela2 += f"<tr><td colspan='{total_colunas_tabela2-1}'>Total</td><td align ='right'>{total_tabela2:_.2f}</td></tr>".replace('.', ',').replace('_', '.')
 
 
-corpo_footer = "<body></html>"
+corpo_footer = ("<br/><br/>"
+                "* % Estoque considera o Saldo a separar X Estoque atual, não considera o consumo do item por outros pedidos, OPs etc."
+                "<body></html>")
 
 corpo_email = email_head
 
