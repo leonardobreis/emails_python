@@ -15,6 +15,9 @@ config_emailsTeste: str = ""
 config_assunto: str = ""
 config_tituloTabela1: str = ""
 config_tituloTabela2: str = ""
+config_APItoken: str = ""
+config_APICNPJ: str = ""
+config_URLBase: str = ""
 
 for configs in config.getElementsByTagName("EmailNFsRecebimento"):
     config_inTeste= int(configs.getAttribute("inTeste"))
@@ -26,14 +29,15 @@ for configs in config.getElementsByTagName("EmailNFsRecebimento"):
     config_tituloTabela1 = configs.getAttribute("TituloTabela1")
 
 for configs in config.getElementsByTagName("APIBuscaNFE"):
-    config_APItoken= configs.getAttribute("APItoken")
-    config_APICNPJ= configs.getAttribute("APICNPJ")
+    config_APItoken = configs.getAttribute("APItoken")
+    config_APICNPJ = configs.getAttribute("APICNPJ")
+    config_URLBase = configs.getAttribute("URLBase")
 
 dt_ini = '2024-01-01'
 hoje = date.today()
 dt_fin = hoje.strftime('%Y-%m-%d')
 
-url = f"https://univention.app.br/busca-api/nfe_busca?cnpj={config_APICNPJ}&dt_ini={dt_ini}&dt_fin={dt_fin}&token={config_APItoken}"
+url = f"{config_URLBase}?cnpj={config_APICNPJ}&dt_ini={dt_ini}&dt_fin={dt_fin}&token={config_APItoken}"
 
 response = requests.get(url)
 data = response.json()
