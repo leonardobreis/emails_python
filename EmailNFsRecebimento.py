@@ -25,10 +25,15 @@ for configs in config.getElementsByTagName("EmailNFsRecebimento"):
     config_assunto = configs.getAttribute("Assunto")
     config_tituloTabela1 = configs.getAttribute("TituloTabela1")
 
+for configs in config.getElementsByTagName("APIBuscaNFE"):
+    config_APItoken= configs.getAttribute("APItoken")
+    config_APICNPJ= configs.getAttribute("APICNPJ")
+
+dt_ini = '2024-01-01'
 hoje = date.today()
 dt_fin = hoje.strftime('%Y-%m-%d')
 
-url = f"https://univention.app.br/busca-api/nfe_busca?cnpj=03685434000160&dt_ini=2024-01-01&dt_fin={dt_fin}&token=KgyanppIw3O37yOQ7RV9Gq3StoZRmcLAde8ux0PH65GgOzKBnfzcT2CzsUioKsfV6713b7e76d05f"
+url = f"https://univention.app.br/busca-api/nfe_busca?cnpj={config_APICNPJ}&dt_ini={dt_ini}&dt_fin={dt_fin}&token={config_APItoken}"
 
 response = requests.get(url)
 data = response.json()
