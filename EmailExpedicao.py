@@ -3,6 +3,7 @@ from typing import List, Any
 import ConectDBcorp
 import EnviarEmail
 from xml.dom import minidom
+from datetime import datetime, timedelta
 
 with open("V:\Informática\EmailsPython\SQLQuery\SQLQuery - Expedicao.sql", "r") as arquivo:
     SQLQuery = arquivo.read()
@@ -51,8 +52,14 @@ total2_tabela1 = 0
 divisoes_tabela1 = []
 
 for x in rows:
-    email_body += (f"<tr>"
-                   f"<td>{x.NFNum}</td>"
+    if x.NFDataEmissao.date() < (datetime.now().date() - timedelta(days=3)):
+        email_body += f"<tr style='color:red'>"
+    elif x.NFDataEmissao.date() == datetime.now().date():
+        email_body += f"<tr style='color:black'>"
+    else:
+        email_body += f"<tr style='color:blue'>"
+
+    email_body += (f"<td>{x.NFNum}</td>"
                    f"<td>{x.Emissao}</td>"
                    f"<td>{x.DestNFNomeRazaoSocial}</td>"
                    f"<td>{x.NFOrdColId}</td>"
@@ -80,7 +87,13 @@ email_body += (f"<tr><td colspan='{total_colunas_tabela1-2}'>Total</td>"
                f"<td align ='right'>{total2_tabela1:_.2f}</td></tr>").replace('.', ',').replace('_', '.')
 
 
-corpo_footer = "<body></html>"
+corpo_footer = ("<br/>"
+                "<table border='1' style='color:black'>"
+                "<tr><th style='color:black'>Legenda:</th></tr>"
+                "<tr><td style='color:red'>NF emitida a mais que 3 dias</td></tr>"
+                "<tr><td style='color:blue'>NF emitida até 3 dias</td></tr>"
+                "<tr><td style='color:black'>NF emitida hoje</td></tr>"
+                "</table><body></html>")
 
 corpo_email = (email_head +
                "<table border='1' style='color:black'>" + titulo_tabela1 + email_titulo_colunas + email_body + "</table>" +
