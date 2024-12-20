@@ -18,6 +18,7 @@ config_tituloTabela2: str = ""
 config_APItoken: str = ""
 config_APICNPJ: str = ""
 config_URLBase: str = ""
+config_NFsIgnorar: str = ""
 
 for configs in config.getElementsByTagName("EmailNFsRecebimento"):
     config_inTeste= int(configs.getAttribute("inTeste"))
@@ -27,6 +28,7 @@ for configs in config.getElementsByTagName("EmailNFsRecebimento"):
     config_emailsCc = configs.getAttribute("EmailCc")
     config_assunto = configs.getAttribute("Assunto")
     config_tituloTabela1 = configs.getAttribute("TituloTabela1")
+    config_NFsIgnorar = configs.getAttribute("NFsIgnorar")
 
 for configs in config.getElementsByTagName("APIBuscaNFE"):
     config_APItoken = configs.getAttribute("APItoken")
@@ -64,21 +66,36 @@ email_body = ''
 
 titulo_tabela1 = f"<tr><th colspan='{total_colunas_tabela1}'>{config_tituloTabela1}</th></tr>"
 email_body_tabela1 = ''
+quantidade_tabela1 = 0
 total_tabela1 = 0
 quantidade_atrasado1 = 0
+total_atrasado = 0
 quantidade_normal1 = 0
+total_normal = 0
+quantidade_recebido = 0
+total_recebido = 0
+quantidade_naorecebido = 0
+total_naorecebido = 0
+
 
 for x in rows:
     if x.descEvento != 'Ciencia da Operacao':
+        continue
+
+    if x.chNFe in config_NFsIgnorar:
         continue
 
     dataEmi = datetime.strptime(x.dhEmi, "%Y-%m-%d")
 
     if x.recibo_dt == 'NULL':
         recebimento = 'Não Recebido'
+        quantidade_naorecebido += 1
+        total_naorecebido += float(x.vNF)
     else:
         dataRec = datetime.strptime(x.recibo_dt, "%Y-%m-%d")
         recebimento = f"{str(dataRec.strftime('%d/%m/%Y'))} - {x.recibo_user}"
+        quantidade_recebido += 1
+        total_recebido += float(x.vNF)
 
     cnpj = x.CNPJ
     cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
@@ -86,9 +103,11 @@ for x in rows:
     if dataEmi.date() < (datetime.now().date() - timedelta(days=7)):
         email_body = f"<tr style='color:red'>"
         quantidade_atrasado1 += 1
+        total_atrasado += float(x.vNF)
     else:
         email_body = f"<tr style='color:black'>"
         quantidade_normal1 += 1
+        total_normal += float(x.vNF)
 
     email_body += (f"<td>{x.nNF}</td>"
                   f"<td>{x.xNome}</td>"+
@@ -99,15 +118,32 @@ for x in rows:
                   f"<td align ='right'>{float(x.vNF):_.2f}</td>".replace('.',',').replace('_','.')+
                   f"</tr>")
 
+    quantidade_tabela1 += 1
     total_tabela1 += float(x.vNF)
     email_body_tabela1 += email_body
 
-email_body_tabela1 += f"<tr><th colspan='{total_colunas_tabela1}'>Total Geral</th></tr>"
-email_body_tabela1 += (f"<tr><td colspan='{total_colunas_tabela1-3}'>Total</td>"
-                       f"<td align ='left'>Qtd: {quantidade_normal1:_.0f}</td>"
-                       f"<td align ='left' style='color:red'>Qtd: {quantidade_atrasado1:_.0f}</td>"
-                       f"<td align ='right'>{total_tabela1:_.2f}</td></tr>").replace('.', ',').replace('_', '.')
+email_body_tabela1 += f"<tr><th colspan='{total_colunas_tabela1}'>Total por Prazo</th></tr>"
+email_body_tabela1 += (f"<tr style='color:red'><td colspan='{total_colunas_tabela1-2}'>NF emitida a mais de 7 dias</td>"
+                       f"<td align ='left'>Qtd: {quantidade_atrasado1:_.0f}</td>"
+                       f"<td align ='right'>{total_atrasado:_.2f}</td></tr>").replace('.', ',').replace('_', '.')
 
+email_body_tabela1 += (f"<tr><td colspan='{total_colunas_tabela1-2}'>NF emitida até 7 dias</td>"
+                       f"<td align ='left'>Qtd: {quantidade_normal1:_.0f}</td>"
+                       f"<td align ='right'>{total_normal:_.2f}</td></tr>").replace('.', ',').replace('_', '.')
+
+email_body_tabela1 += f"<tr><th colspan='{total_colunas_tabela1}'>Total por Recebimento</th></tr>"
+email_body_tabela1 += (f"<tr><td colspan='{total_colunas_tabela1-2}'>Recebimento Físico	Não informado</td>"
+                       f"<td align ='left'>Qtd: {quantidade_naorecebido:_.0f}</td>"
+                       f"<td align ='right'>{total_naorecebido:_.2f}</td></tr>").replace('.', ',').replace('_', '.')
+
+email_body_tabela1 += (f"<tr><td colspan='{total_colunas_tabela1-2}'>Recebimento Físico	OK</td>"
+                       f"<td align ='left'>Qtd: {quantidade_recebido:_.0f}</td>"
+                       f"<td align ='right'>{total_recebido:_.2f}</td></tr>").replace('.', ',').replace('_', '.')
+
+email_body_tabela1 += f"<tr><th colspan='{total_colunas_tabela1}'>Total Geral</th></tr>"
+email_body_tabela1 += (f"<tr><td colspan='{total_colunas_tabela1-2}'>Total</td>"
+                       f"<td align ='left'>Qtd: {quantidade_tabela1:_.0f}</td>"
+                       f"<td align ='right'>{total_tabela1:_.2f}</td></tr>").replace('.', ',').replace('_', '.')
 
 corpo_footer = ("<br/>"
                 "<table border='1' style='color:black'>"
