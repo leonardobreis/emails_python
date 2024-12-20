@@ -110,7 +110,7 @@ for x in rows:
         total_normal += float(x.vNF)
 
     email_body += (f"<td>{x.nNF}</td>"
-                  f"<td>{x.xNome}</td>"+
+                  f"<td>{str(x.xNome).upper()}</td>"+
                   f"<td>{cnpj_formatado}</td>"+
                   f"<td>{dataEmi.strftime('%d/%m/%Y')}</td>"+
                   f"<td>{recebimento}</td>"+
