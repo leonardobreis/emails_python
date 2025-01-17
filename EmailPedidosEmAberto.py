@@ -17,7 +17,7 @@ config_inHomolog: int = 1
 config_emailsPara: str  = ""
 config_emailsPara_CD: str  = ""
 config_emailsPara_AT: str  = ""
-config_emailsPara_Thiago: str  = ""
+config_emailsPara_Pedro: str  = ""
 config_emailsPara_Ricardo: str  = ""
 config_emailsPara_Outros: str  = ""
 config_emailsCc: str = ""
@@ -30,7 +30,7 @@ for configs in config.getElementsByTagName("EmailPedidosEmAberto"):
     config_inHomolog = int(configs.getAttribute("inHomolog"))
     config_emailsPara_CD = configs.getAttribute("EmailsPara_CD")
     config_emailsPara_AT = configs.getAttribute("EmailsPara_AT")
-    config_emailsPara_Thiago = configs.getAttribute("EmailsPara_Thiago")
+    config_emailsPara_Pedro = configs.getAttribute("EmailsPara_Pedro")
     config_emailsPara_Ricardo = configs.getAttribute("EmailsPara_Ricardo")
     config_emailsPara_Outros = configs.getAttribute("EmailsPara_Outros")
     config_emailsCc = configs.getAttribute("EmailCc")
@@ -50,8 +50,8 @@ elif parametro1 == 'AT':
     config_emailsPara = config_emailsPara_AT
 elif parametro1 == 'RICARDO':
     config_emailsPara = config_emailsPara_Ricardo
-elif parametro1 == 'THIAGO':
-    config_emailsPara = config_emailsPara_Thiago
+elif parametro1 == 'PEDRO':
+    config_emailsPara = config_emailsPara_Pedro
 elif parametro1 == 'AED':
     config_emailsPara = config_emailsPara_Outros
 else:
