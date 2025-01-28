@@ -18,6 +18,7 @@ config_tituloTabela2: str = ""
 config_APItoken: str = ""
 config_APICNPJ: str = ""
 config_URLBase: str = ""
+config_URLDanfe: str = ""
 config_NFsIgnorar: str = ""
 
 for configs in config.getElementsByTagName("EmailNFsRecebimento"):
@@ -34,6 +35,7 @@ for configs in config.getElementsByTagName("APIBuscaNFE"):
     config_APItoken = configs.getAttribute("APItoken")
     config_APICNPJ = configs.getAttribute("APICNPJ")
     config_URLBase = configs.getAttribute("URLBase")
+    config_URLDanfe = configs.getAttribute("URLDanfe")
 
 dt_ini = '2024-01-01'
 hoje = date.today()
@@ -109,7 +111,9 @@ for x in rows:
         quantidade_normal1 += 1
         total_normal += float(x.vNF)
 
-    email_body += (f"<td>{x.nNF}</td>"
+    email_body += (f"<td>"
+                   f"<a href='{config_URLDanfe}{x.id}' target='_blank'>{x.nNF}</a>"
+                   f"</td>"
                   f"<td>{str(x.xNome).upper()}</td>"+
                   f"<td>{cnpj_formatado}</td>"+
                   f"<td>{dataEmi.strftime('%d/%m/%Y')}</td>"+
