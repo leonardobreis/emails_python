@@ -7,6 +7,9 @@ from xml.dom import minidom
 with open("V:\Informática\EmailsPython\SQLQuery\SQLQuery - TitulosPagarReceberVencidos.sql", "r") as arquivo:
     SQLQuery = arquivo.read()
 
+with open("V:\Informática\EmailsPython\SQLQuery\SQLQuery - OcorrenciaTitulos.sql", "r") as arquivo2:
+    SQLQuery2 = arquivo2.read()
+
 with open("V:\Informática\EmailsPython\emails_parametros.xml", "r", encoding="utf-8") as xmlFile:
     config = minidom.parse(xmlFile)
 
@@ -59,17 +62,32 @@ for x in rows:
     email_body = (f"<tr>"
                   f"<td>{x.Division}</td>"
                   f"<td>{x.Documento}</td>"
-                  f"<td>{x.Parcela}</td>"
+                  f"<td align ='center'>{x.Parcela}</td>"
                   f"<td>{x.Vencimento}</td>"
                   f"<td>{x.Pagamento}</td>"
                   f"<td align ='right'>{x.DiasPagto}</td>"
                   f"<td>{x.Terceiro}</td>"+
                   f"<td align ='right'>{float(x.ValTitulo):_.2f}</td>".replace('.',',').replace('_','.')+
                   f"</tr>")
+    email_body2 = ''
+
+    SQLQuery2Alterado = SQLQuery2
+    SQLQuery2Alterado = SQLQuery2Alterado.replace('@Titulo', f"{x.TitId}")
+    cursor2 = ConectDBcorp.ConectaSQL()
+    cursor2.execute(SQLQuery2Alterado)
+    rows2 = cursor2.fetchall()
+
+    for y in rows2:
+        email_body2 += (f"<tr style='color:black'>"
+                      f"<td colspan='2' align ='right'>--->Ocorrência Doc.: {x.DocNum}</td>"
+                      f"<td align ='center'>{y.TipoOcorr}</td>"
+                      f"<td>{y.DataOcorr}</td>"
+                      f"<td colspan='4'>{y.Historico}</td>"
+                      f"</tr>")
 
     if x.Tipo == 'Receber' and x.Status == 'Vencido':
         total_tabela1 += float(x.ValTitulo)
-        email_body_tabela1 += email_body
+        email_body_tabela1 += email_body + email_body2
         divisoes_tabela1 = ConectDBcorp.arrayAdd(divisoes_tabela1, x.Division, float(x.ValTitulo))
         if x.Terceiro[:1] == 'G':
             grupos_tabela1 = ConectDBcorp.arrayAdd(grupos_tabela1, x.Terceiro, float(x.ValTitulo))
@@ -78,7 +96,7 @@ for x in rows:
 
     if x.Tipo == 'Receber' and x.Status == 'Liquidado':
         total_tabela2 += float(x.ValTitulo)
-        email_body_tabela2 += email_body
+        email_body_tabela2 += email_body + email_body2
         divisoes_tabela2 = ConectDBcorp.arrayAdd(divisoes_tabela2, x.Division, float(x.ValTitulo))
         if x.Terceiro[:1] == 'G':
             grupos_tabela2 = ConectDBcorp.arrayAdd(grupos_tabela2, x.Terceiro, float(x.ValTitulo))

@@ -8,3 +8,5 @@ pyinstaller --onefile EmailExpedicao.py
 pyinstaller --onefile EmailTerceirosEmAberto.py
 
 pyinstaller --onefile EmailNFsRecebimento.py
+
+pyinstaller --onefile EmailOrcamentosEmAberto.py
