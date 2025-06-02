@@ -20,6 +20,7 @@ config_APICNPJ: str = ""
 config_URLBase: str = ""
 config_URLDanfe: str = ""
 config_NFsIgnorar: str = ""
+config_DanfeToken: str = ""
 
 for configs in config.getElementsByTagName("EmailNFsRecebimento"):
     config_inTeste= int(configs.getAttribute("inTeste"))
@@ -36,6 +37,7 @@ for configs in config.getElementsByTagName("APIBuscaNFE"):
     config_APICNPJ = configs.getAttribute("APICNPJ")
     config_URLBase = configs.getAttribute("URLBase")
     config_URLDanfe = configs.getAttribute("URLDanfe")
+    config_DanfeToken = configs.getAttribute("DanfeToken")
 
 dt_ini = '2024-01-01'
 hoje = date.today()
@@ -102,6 +104,8 @@ for x in rows:
     cnpj = x.CNPJ
     cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
 
+    urlDanfe = f"{config_URLDanfe}?empresa={config_APICNPJ}&chacesso={x.chNFe}&token={config_DanfeToken}"
+
     if dataEmi.date() < (datetime.now().date() - timedelta(days=7)):
         email_body = f"<tr style='color:red'>"
         quantidade_atrasado1 += 1
@@ -112,7 +116,7 @@ for x in rows:
         total_normal += float(x.vNF)
 
     email_body += (f"<td>"
-                   f"<a href='{config_URLDanfe}{x.id}' target='_blank'>{x.nNF}</a>"
+                   f"<a href='{urlDanfe}' target='_blank'>{x.nNF}</a>"
                    f"</td>"
                   f"<td>{str(x.xNome).upper()}</td>"+
                   f"<td>{cnpj_formatado}</td>"+
