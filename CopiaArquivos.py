@@ -48,52 +48,70 @@ def main():
     arquivos_para_zipar = []
     resumo_revisoes = {}  # chave: código original, valor: maior revisão (como string)
     erros = []
+    # Dicionário para verificar se o PDF foi encontrado para cada código
+    pdf_encontrado_por_codigo = {codigo: False for codigo in codigos}
+
 
     for codigo in codigos:
         cod_formatado = formatar_codigo(codigo)
 
-        for tipo, pasta in pastas.items():
-            ext = tipo.lower()
-            arquivo = encontrar_maior_revisao(pasta, cod_formatado, ext)
+        # Primeiro, verificar o PDF
+        arquivo_pdf = encontrar_maior_revisao(pastas["PDF"], cod_formatado, "pdf")
+        if arquivo_pdf:
+            arquivos_para_zipar.append(arquivo_pdf)
+            print(f"[OK] PDF Encontrado: {arquivo_pdf}")
+            pdf_encontrado_por_codigo[codigo] = True
 
-            if arquivo:
-                arquivos_para_zipar.append(arquivo)
-                print(f"[OK] Encontrado: {arquivo}")
+            # Extrai a revisão do nome do arquivo PDF
+            match_rev = re.search(r'REV (\d{2})', os.path.basename(arquivo_pdf), re.IGNORECASE)
+            if match_rev:
+                rev = match_rev.group(1)
+                resumo_revisoes[codigo] = rev # Armazena a revisão do PDF como a principal para o resumo
 
-                # Extrai a revisão do nome do arquivo
-                match_rev = re.search(r'REV (\d{2})', os.path.basename(arquivo), re.IGNORECASE)
-                if match_rev:
-                    rev = match_rev.group(1)
-                    chave_resumo = f"{codigo}"  # ou cod_formatado se preferir
-                    if chave_resumo not in resumo_revisoes:
-                        resumo_revisoes[chave_resumo] = rev
+            # Agora, procurar os outros tipos de arquivo se o PDF foi encontrado
+            for tipo, pasta in pastas.items():
+                if tipo != "PDF": # Já lidamos com o PDF
+                    ext = tipo.lower()
+                    arquivo = encontrar_maior_revisao(pasta, cod_formatado, ext)
+                    if arquivo:
+                        arquivos_para_zipar.append(arquivo)
+                        print(f"[OK] Encontrado: {arquivo}")
                     else:
-                        # Guarda a maior revisão entre as encontradas
-                        if int(rev) > int(resumo_revisoes[chave_resumo]):
-                            resumo_revisoes[chave_resumo] = rev
+                        erros.append(f"[AVISO] Arquivo {tipo} não encontrado para {codigo}")
+        else:
+            erros.append(f"[ERRO] PDF não encontrado para {codigo}")
+            # Se o PDF não for encontrado, não precisamos procurar os outros tipos para este código.
 
-            else:
-                erros.append(f"[ERRO] Arquivo não encontrado para {codigo} ({tipo})")
+    # Verificar se todos os códigos têm um PDF associado
+    todos_pdfs_encontrados = all(pdf_encontrado_por_codigo.values())
 
     if erros:
-        print("\nOcorreram erros:")
+        print("\nOcorreram problemas:")
         for erro in erros:
             print(erro)
 
-    agora = datetime.now().strftime("%Y%m%d_%H%M%S")
-    nome_zip = f"EngenhariaAirzap_{agora}.zip"
-    caminho_zip = os.path.join(pasta_saida, nome_zip)
+    # Só gera o ZIP se todos os PDFs necessários foram encontrados
+    if todos_pdfs_encontrados:
+        agora = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nome_zip = f"EngenhariaAirzap_{agora}.zip"
+        caminho_zip = os.path.join(pasta_saida, nome_zip)
 
-    with zipfile.ZipFile(caminho_zip, 'w') as zipf:
-        for arquivo in arquivos_para_zipar:
-            zipf.write(arquivo, os.path.basename(arquivo))
+        try:
+            with zipfile.ZipFile(caminho_zip, 'w') as zipf:
+                for arquivo in arquivos_para_zipar:
+                    zipf.write(arquivo, os.path.basename(arquivo))
+            print(f"\n[OK] Arquivo ZIP criado com sucesso: {caminho_zip}")
 
-    print(f"\n[OK] Arquivo ZIP criado com sucesso: {caminho_zip}")
+            # Mostra o resumo final
+            print("\nResumo dos arquivos incluídos:")
+            for cod, rev in resumo_revisoes.items():
+                print(f"  {formatar_codigo(cod)} - REV {rev}")
 
-    # Mostra o resumo final
-    print("\nResumo dos arquivos incluídos:")
-    for cod, rev in resumo_revisoes.items():
-        print(f"  {formatar_codigo(cod)} - REV {rev}")
+        except Exception as e:
+            print(f"\n[ERRO] Ocorreu um erro ao criar o arquivo ZIP: {e}")
+    else:
+        print("\n[AVISO] O arquivo ZIP não foi gerado porque um ou mais PDFs não foram encontrados para os códigos fornecidos.")
+
 
     input("\nPressione Enter para sair...")
 
