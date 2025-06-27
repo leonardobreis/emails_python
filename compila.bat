@@ -9,4 +9,6 @@ pyinstaller --onefile EmailTerceirosEmAberto.py
 
 pyinstaller --onefile EmailNFsRecebimento.py
 
+pyinstaller --onefile CopiaArquivos.py
+
 pyinstaller --onefile EmailOrcamentosEmAberto.py
