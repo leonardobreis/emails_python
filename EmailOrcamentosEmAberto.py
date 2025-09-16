@@ -68,19 +68,19 @@ rows = cursor.fetchall()
 email_head = """<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>"""
 
 email_titulo_colunas_tabela1 = """<tr>
-                                    <th>Prev. Fatur.</th>
+                                    <th>Data Orçamento</th>
                                     <th>Nº Orçamento</th>
                                     <th>Cliente</th>
                                     <th>Status Orçamento</th>
                                     <th>Status Vencimento</th>
+                                    <th>Prev. Fatur.</th>
                                     <th>% Estoque*</th>                                    
                                     <th>Vendedor</th>
                                     <th>Pagamento</th>
                                     <th>Valor</th>
                                   </tr>"""
-total_colunas_tabela1 = 9
+total_colunas_tabela1 = 10
 
-titulo_tabela1 = f"<tr><th colspan='{total_colunas_tabela1}'>{config_tituloTabela1}: {parametro1}</th></tr>"
 email_body_tabela1 = ''
 total_tabela1 = 0
 meses_tabela1 = []
@@ -88,18 +88,19 @@ grupos_tabela1 = []
 
 for x in rows:
     total_tabela1 += float(x.Valor)
-    if x.DataPrevFaturamento.date() < datetime.now().date() or x.StatusValidade == "Vencido":
+    if x.StatusValidade == "Vencido":
         email_body_tabela1 += f"<tr style='color:red'>"
     elif x.DataPrevFaturamento.date() == datetime.now().date():
         email_body_tabela1 += f"<tr style='color:blue'>"
     else:
         email_body_tabela1 += f"<tr style='color:black'>"
 
-    email_body_tabela1 += (f"<td>{x.PrevFaturamento}</td>"
+    email_body_tabela1 += (f"<td>{x.DataOrcamento}</td>"
                            f"<td>{x.OrcamentoID}</td>"
                            f"<td>{x.Cliente}</td>"
                            f"<td>{x.StatusOrcamento}</td>"
                            f"<td>{x.StatusValidade}</td>"
+                           f"<td>{x.PrevFaturamento}</td>"
                            f"<td>{x.Estoque}</td>"
                            f"<td>{x.Representante}</td>"
                            f"<td>{x.Pagamento}</td>"
@@ -128,7 +129,7 @@ email_body_tabela1 += f"<tr><td colspan='{total_colunas_tabela1-1}'>Total</td><t
 corpo_footer = ("<br/>"
                 "<table border='1' style='color:black'>"
                 "<tr><th style='color:black'>Legenda:</th></tr>"
-                "<tr><td style='color:red'>Atrasado / Vencido</td></tr>"
+                "<tr><td style='color:red'>Vencido</td></tr>"
                 "<tr><td style='color:blue'>Prev. Entrega Hoje</td></tr>"
                 "<tr><td style='color:black'>No Prazo</td></tr>"
                 "</table>"
@@ -136,6 +137,8 @@ corpo_footer = ("<br/>"
                 "<body></html>")
 
 corpo_email = email_head
+
+titulo_tabela1 = f"<tr><th colspan='{total_colunas_tabela1-1}'>{config_tituloTabela1}: {parametro1}</th align ='right'>{total_tabela1:_.2f}</th></tr>".replace('.', ',').replace('_', '.')
 
 if total_tabela1 > 0:
     corpo_email += "<table border='1' style='color:black'>" + titulo_tabela1 + email_titulo_colunas_tabela1 + email_body_tabela1 + "</table><br/><br/>"
