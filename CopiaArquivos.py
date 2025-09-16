@@ -62,13 +62,12 @@ def main():
             print(f"[OK] PDF Encontrado: {arquivo_pdf}")
             pdf_encontrado_por_codigo[codigo] = True
 
-            # Extrai a revisão do nome do arquivo PDF
             match_rev = re.search(r'REV (\d{2})', os.path.basename(arquivo_pdf), re.IGNORECASE)
             if match_rev:
                 rev = match_rev.group(1)
-                resumo_revisoes[codigo] = rev # Armazena a revisão do PDF como a principal para o resumo
+                data_modificacao = datetime.fromtimestamp(os.path.getmtime(arquivo_pdf)).strftime("%d/%m/%Y %H:%M")
+                resumo_revisoes[codigo] = (rev, data_modificacao)
 
-            # Agora, procurar os outros tipos de arquivo se o PDF foi encontrado
             for tipo, pasta in pastas.items():
                 if tipo != "PDF": # Já lidamos com o PDF
                     ext = tipo.lower()
@@ -104,8 +103,8 @@ def main():
 
             # Mostra o resumo final
             print("\nResumo dos arquivos incluídos:")
-            for cod, rev in resumo_revisoes.items():
-                print(f"  {formatar_codigo(cod)} - REV {rev}")
+            for cod, (rev, data) in resumo_revisoes.items():
+                print(f"  {formatar_codigo(cod)} - REV {rev} - Última alteração: {data}")
 
         except Exception as e:
             print(f"\n[ERRO] Ocorreu um erro ao criar o arquivo ZIP: {e}")
