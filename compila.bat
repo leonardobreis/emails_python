@@ -12,3 +12,5 @@ pyinstaller --onefile EmailNFsRecebimento.py
 pyinstaller --onefile CopiaArquivos.py
 
 pyinstaller --onefile EmailOrcamentosEmAberto.py
+
+pyinstaller --onefile EmailFaltaComprar.py
