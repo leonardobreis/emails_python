@@ -3,15 +3,15 @@ import re
 import zipfile
 from datetime import datetime
 
-# Caminhos das pastas
+# --- CONFIGURAÇÕES DE CAMINHOS ---
+pasta_saida = os.path.join(os.path.expanduser("~"), "Downloads")
+
 pastas = {
+    "ETIQUETAS": r"V:\DBCorp\Engenharia\Etiquetas",
     "PDF": r"V:\DBCorp\Engenharia\PDF",
     "DXF": r"V:\DBCorp\Engenharia\DXF",
     "STEP": r"V:\DBCorp\Engenharia\STEP"
 }
-
-# Pasta de destino
-pasta_saida = r"S:\\"
 
 
 def formatar_codigo(codigo):
@@ -19,6 +19,9 @@ def formatar_codigo(codigo):
 
 
 def encontrar_maior_revisao(pasta, codigo_formatado, extensao):
+    if not os.path.exists(pasta):
+        return None
+
     arquivos = os.listdir(pasta)
     padrao = re.compile(rf"{re.escape(codigo_formatado)} - REV (\d{{2}})\.{extensao}$", re.IGNORECASE)
 
@@ -37,82 +40,83 @@ def encontrar_maior_revisao(pasta, codigo_formatado, extensao):
 
 
 def main():
-    print("Digite os códigos dos produtos, um por linha (pressione Enter duas vezes para terminar):")
+    print(f"Destino dos arquivos: {pasta_saida}")
+    print("Digite os códigos (Enter duas vezes para finalizar):")
+
     codigos = []
     while True:
         entrada = input()
-        if entrada == "":
-            break
+        if entrada == "": break
         codigos.append(entrada.strip())
 
     arquivos_para_zipar = []
-    resumo_revisoes = {}  # chave: código original, valor: maior revisão (como string)
+    resumo_revisoes = {}
     erros = []
-    # Dicionário para verificar se o PDF foi encontrado para cada código
-    pdf_encontrado_por_codigo = {codigo: False for codigo in codigos}
 
+    # Dicionário para validar se o código tem o "mínimo necessário" (Etiqueta OU PDF)
+    item_validado = {codigo: False for codigo in codigos}
 
     for codigo in codigos:
         cod_formatado = formatar_codigo(codigo)
+        encontrou_etiqueta_neste_codigo = False
 
-        # Primeiro, verificar o PDF
+        # 1. Busca Etiqueta
+        arquivo_etiqueta = encontrar_maior_revisao(pastas["ETIQUETAS"], cod_formatado, "pdf")
+        if arquivo_etiqueta:
+            arquivos_para_zipar.append(arquivo_etiqueta)
+            item_validado[codigo] = True
+            encontrou_etiqueta_neste_codigo = True
+            print(f"[OK] Etiqueta encontrada para {codigo}")
+
+        # 2. Busca PDF
         arquivo_pdf = encontrar_maior_revisao(pastas["PDF"], cod_formatado, "pdf")
         if arquivo_pdf:
             arquivos_para_zipar.append(arquivo_pdf)
-            print(f"[OK] PDF Encontrado: {arquivo_pdf}")
-            pdf_encontrado_por_codigo[codigo] = True
+            item_validado[codigo] = True  # Valida se ainda não foi validado pela etiqueta
+            print(f"[OK] PDF encontrado para {codigo}")
 
+            # Coleta dados de revisão para o resumo (baseado no PDF)
             match_rev = re.search(r'REV (\d{2})', os.path.basename(arquivo_pdf), re.IGNORECASE)
             if match_rev:
                 rev = match_rev.group(1)
-                data_modificacao = datetime.fromtimestamp(os.path.getmtime(arquivo_pdf)).strftime("%d/%m/%Y %H:%M")
-                resumo_revisoes[codigo] = (rev, data_modificacao)
+                data_mod = datetime.fromtimestamp(os.path.getmtime(arquivo_pdf)).strftime("%d/%m/%Y %H:%M")
+                resumo_revisoes[codigo] = (rev, data_mod)
 
-            for tipo, pasta in pastas.items():
-                if tipo != "PDF": # Já lidamos com o PDF
-                    ext = tipo.lower()
-                    arquivo = encontrar_maior_revisao(pasta, cod_formatado, ext)
-                    if arquivo:
-                        arquivos_para_zipar.append(arquivo)
-                        print(f"[OK] Encontrado: {arquivo}")
-                    else:
-                        erros.append(f"[AVISO] Arquivo {tipo} não encontrado para {codigo}")
-        else:
-            erros.append(f"[ERRO] PDF não encontrado para {codigo}")
-            # Se o PDF não for encontrado, não precisamos procurar os outros tipos para este código.
+        # 3. Busca DXF e STEP (Apenas se o item já foi validado por Etiqueta ou PDF)
+        for tipo in ["DXF", "STEP"]:
+            arquivo = encontrar_maior_revisao(pastas[tipo], cod_formatado, tipo.lower())
+            if arquivo:
+                arquivos_para_zipar.append(arquivo)
+                print(f"[OK] {tipo} encontrado para {codigo}")
 
-    # Verificar se todos os códigos têm um PDF associado
-    todos_pdfs_encontrados = all(pdf_encontrado_por_codigo.values())
+        # 4. Verificação de Erro: Se não achou Etiqueta NEM PDF
+        if not item_validado[codigo]:
+            erros.append(f"[ERRO] Nem Etiqueta nem PDF encontrados para {codigo}")
+
+    # Gera o ZIP se todos os códigos digitados tiverem ao menos um arquivo base (Etiqueta ou PDF)
+    pode_gerar_zip = all(item_validado.values())
 
     if erros:
-        print("\nOcorreram problemas:")
+        print("\nRelatório de Inconsistências:")
         for erro in erros:
             print(erro)
 
-    # Só gera o ZIP se todos os PDFs necessários foram encontrados
-    if todos_pdfs_encontrados:
+    if pode_gerar_zip and arquivos_para_zipar:
         agora = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nome_zip = f"EngenhariaAirzap_{agora}.zip"
-        caminho_zip = os.path.join(pasta_saida, nome_zip)
+        caminho_zip = os.path.join(pasta_saida, f"EngenhariaAirzap_{agora}.zip")
 
         try:
             with zipfile.ZipFile(caminho_zip, 'w') as zipf:
-                for arquivo in arquivos_para_zipar:
+                for arquivo in set(arquivos_para_zipar):
                     zipf.write(arquivo, os.path.basename(arquivo))
-            print(f"\n[OK] Arquivo ZIP criado com sucesso: {caminho_zip}")
-
-            # Mostra o resumo final
-            print("\nResumo dos arquivos incluídos:")
-            for cod, (rev, data) in resumo_revisoes.items():
-                print(f"  {formatar_codigo(cod)} - REV {rev} - Última alteração: {data}")
-
+            print(f"\n[SUCESSO] ZIP criado: {caminho_zip}")
         except Exception as e:
-            print(f"\n[ERRO] Ocorreu um erro ao criar o arquivo ZIP: {e}")
+            print(f"\n[ERRO] Falha ao criar ZIP: {e}")
     else:
-        print("\n[AVISO] O arquivo ZIP não foi gerado porque um ou mais PDFs não foram encontrados para os códigos fornecidos.")
-
+        print("\n[AVISO] ZIP não gerado. Alguns códigos não possuem arquivos base (Etiqueta ou PDF).")
 
     input("\nPressione Enter para sair...")
+
 
 if __name__ == "__main__":
     main()
