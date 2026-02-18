@@ -110,6 +110,12 @@ def main():
                 for arquivo in set(arquivos_para_zipar):
                     zipf.write(arquivo, os.path.basename(arquivo))
             print(f"\n[SUCESSO] ZIP criado: {caminho_zip}")
+
+            # Mostra o resumo final
+            print("\nResumo dos arquivos incluídos:")
+            for cod, (rev, data) in resumo_revisoes.items():
+                print(f"  {formatar_codigo(cod)} - REV {rev} - Última alteração: {data}")
+
         except Exception as e:
             print(f"\n[ERRO] Falha ao criar ZIP: {e}")
     else:
