@@ -14,3 +14,6 @@ pyinstaller --onefile CopiaArquivos.py
 pyinstaller --onefile EmailOrcamentosEmAberto.py
 
 pyinstaller --onefile EmailFaltaComprar.py
+
+
+pyinstaller --onefile Automacao_AirzapMyBIGateway.py

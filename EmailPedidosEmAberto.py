@@ -4,10 +4,10 @@ from xml.dom import minidom
 import sys
 from datetime import datetime
 
-with open("V:\Informática\EmailsPython\SQLQuery\SQLQuery - PedidosEmAberto.sql", "r") as arquivo:
+with open("V:\\Informática\\EmailsPython\\SQLQuery\\SQLQuery - PedidosEmAberto.sql", "r") as arquivo:
     SQLQuery = arquivo.read()
 
-with open("V:\Informática\EmailsPython\emails_parametros.xml", "r", encoding="utf-8") as xmlFile:
+with open("V:\\Informática\\EmailsPython\\emails_parametros.xml", "r", encoding="utf-8") as xmlFile:
     config = minidom.parse(xmlFile)
 
 parametros = sys.argv
@@ -18,6 +18,7 @@ config_emailsPara: str  = ""
 config_emailsPara_CD: str  = ""
 config_emailsPara_AT: str  = ""
 config_emailsPara_Pedro: str  = ""
+config_emailsPara_PedroSilva: str  = ""
 config_emailsPara_Ricardo: str  = ""
 config_emailsPara_Outros: str  = ""
 config_emailsCc: str = ""
@@ -31,6 +32,7 @@ for configs in config.getElementsByTagName("EmailPedidosEmAberto"):
     config_emailsPara_CD = configs.getAttribute("EmailsPara_CD")
     config_emailsPara_AT = configs.getAttribute("EmailsPara_AT")
     config_emailsPara_Pedro = configs.getAttribute("EmailsPara_Pedro")
+    config_emailsPara_PedroSilva = configs.getAttribute("EmailsPara_PedroSilva")
     config_emailsPara_Ricardo = configs.getAttribute("EmailsPara_Ricardo")
     config_emailsPara_Outros = configs.getAttribute("EmailsPara_Outros")
     config_emailsCc = configs.getAttribute("EmailCc")
@@ -52,6 +54,8 @@ elif parametro1 == 'RICARDO':
     config_emailsPara = config_emailsPara_Ricardo
 elif parametro1 == 'PEDRO':
     config_emailsPara = config_emailsPara_Pedro
+elif parametro1 == 'PEDROSILVA':
+    config_emailsPara = config_emailsPara_PedroSilva
 elif parametro1 == 'AED':
     config_emailsPara = config_emailsPara_Outros
 else:
